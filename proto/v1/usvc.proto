@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package v1;
+
+service CountService {
+    rpc GetCount (GetCountRequest) returns (Count) {}
+    rpc UpdateCount (UpdateCountRequest) returns (Count) {}
+}
+
+message Count {
+    int64 value = 1;
+}
+
+message GetCountRequest {}
+
+message UpdateCountRequest {
+    int64 value = 1;
+}
