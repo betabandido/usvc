@@ -12,6 +12,7 @@ import (
 	"google.golang.org/grpc"
 	"io"
 	"log"
+	"math/rand"
 	"net"
 	"strconv"
 	"strings"
@@ -66,10 +67,21 @@ func (s *countServer) tearDown() {
 }
 
 func (s *countServer) GetCount(ctx context.Context, request *v1.GetCountRequest) (*v1.Count, error) {
+	delay := 0
+	if request.AddDelay {
+		delay = rand.Intn(2000) + 250
+	}
+
+	log.Printf("Processing GetCount with delay %d", delay)
+
+	time.Sleep(time.Duration(delay) * time.Millisecond)
+
 	totalValue := s.value
 
 	for _, child := range s.childCountServices {
-		count, err := child.GetCount(ctx, &v1.GetCountRequest{})
+		count, err := child.GetCount(ctx, &v1.GetCountRequest{
+			AddDelay: request.AddDelay,
+		})
 		if err != nil {
 			log.Printf("error getting count: %v", err)
 		} else {
@@ -87,6 +99,8 @@ func (s *countServer) UpdateCount(ctx context.Context, request *v1.UpdateCountRe
 
 func main() {
 	flag.Parse()
+
+	rand.Seed(time.Now().UTC().UnixNano())
 
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
 	if err != nil {

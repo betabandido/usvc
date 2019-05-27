@@ -11,7 +11,9 @@ message Count {
     int64 value = 1;
 }
 
-message GetCountRequest {}
+message GetCountRequest {
+    bool addDelay = 1;
+}
 
 message UpdateCountRequest {
     int64 value = 1;

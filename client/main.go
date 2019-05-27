@@ -12,6 +12,7 @@ import (
 var port = flag.Int("port", 5000, "port number")
 var action = flag.String("action", "get-count", "action")
 var value = flag.Int64("value", 1, "value")
+var addDelay = flag.Bool("add-delay", false, "add random delay when getting count")
 
 func main() {
 	flag.Parse()
@@ -28,18 +29,30 @@ func main() {
 	client := v1.NewCountServiceClient(conn)
 
 	if *action == "get-count" {
-		count, err := client.GetCount(context.Background(), &v1.GetCountRequest{})
-		if err != nil {
-			log.Fatalf("error getting count: %v", err)
-		}
-		fmt.Printf("count: %v\n", count.Value)
+		fmt.Printf("count: %v\n", getCount(client))
 	} else if *action == "update-count" {
-		count, err := client.UpdateCount(context.Background(), &v1.UpdateCountRequest{Value: *value})
-		if err != nil {
-			log.Fatalf("error updating count: %v", err)
-		}
-		fmt.Printf("count: %v\n", count.Value)
+		fmt.Printf("count: %v\n", updateCount(client, *value))
 	} else {
 		log.Fatalf("unknown action: %v", action)
 	}
+}
+
+func getCount(client v1.CountServiceClient) int64 {
+	count, err := client.GetCount(context.Background(), &v1.GetCountRequest{
+		AddDelay: *addDelay,
+	})
+	if err != nil {
+		log.Fatalf("error getting count: %v", err)
+	}
+
+	return count.Value
+}
+
+func updateCount(client v1.CountServiceClient, value int64) int64 {
+	count, err := client.UpdateCount(context.Background(), &v1.UpdateCountRequest{Value: value})
+	if err != nil {
+		log.Fatalf("error updating count: %v", err)
+	}
+
+	return count.Value
 }
