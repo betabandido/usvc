@@ -13,6 +13,7 @@ message Count {
 
 message GetCountRequest {
     bool addDelay = 1;
+    int32 errorRate = 2;
 }
 
 message UpdateCountRequest {

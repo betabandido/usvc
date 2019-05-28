@@ -81,6 +81,7 @@ func (s *countServer) GetCount(ctx context.Context, request *v1.GetCountRequest)
 	for _, child := range s.childCountServices {
 		count, err := child.GetCount(ctx, &v1.GetCountRequest{
 			AddDelay: request.AddDelay,
+			ErrorRate: request.ErrorRate,
 		})
 		if err != nil {
 			log.Printf("error getting count: %v", err)
@@ -89,7 +90,11 @@ func (s *countServer) GetCount(ctx context.Context, request *v1.GetCountRequest)
 		}
 	}
 
-	return &v1.Count{Value: totalValue}, nil
+	if rand.Int31n(100) < request.ErrorRate {
+		return nil, fmt.Errorf("error getting count")
+	} else {
+		return &v1.Count{Value: totalValue}, nil
+	}
 }
 
 func (s *countServer) UpdateCount(ctx context.Context, request *v1.UpdateCountRequest) (*v1.Count, error) {
